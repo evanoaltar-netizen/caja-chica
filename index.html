@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caja Chica</title>
+<meta name="theme-color" content="#1d6b3c">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Caja Chica">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0c1710);--ink:light-dark(#0f1f15,#e7f0e9);--mute:light-dark(#5a6b60,#9fb3a6);--leaf:light-dark(#1d6b3c,#5cc285);--leafbg:light-dark(#e5f2e9,#13301f);--line:light-dark(#d9e3dc,#25382c);--card:light-dark(#ffffff,#122119);--paper:light-dark(#fbfaf5,#18261d);--alert:light-dark(#c8432a,#ff7a5c);--alertbg:light-dark(#fdebe6,#3a1a12);--onleaf:light-dark(#ffffff,#06140b)}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;overflow-x:clip}
+.app{max-width:460px;margin:0 auto;min-height:100%;padding:env(safe-area-inset-top,0px) 16px 120px}
+header{padding:14px 0 18px;border-bottom:1px solid var(--line)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.top b{font-weight:800;font-size:18px;color:var(--leaf)}
+.who{border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--card);color:var(--ink);font:500 14px Figtree,sans-serif;min-height:36px}
+h1{font-size:32px;line-height:1.05;letter-spacing:-.02em;margin:16px 0 4px;font-weight:800}
+.sum{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big{font-size:clamp(40px,12vw,52px);font-weight:800;letter-spacing:-.03em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sub{color:var(--mute);font-size:15px}
+.tabs{display:flex;gap:8px;margin-top:16px}
+.tab{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px Figtree,sans-serif;cursor:pointer}
+.tab[aria-pressed=true]{background:var(--leaf);border-color:var(--leaf);color:var(--onleaf)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid color-mix(in srgb,var(--leaf) 55%,transparent);outline-offset:2px}
+ul.list{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.ico{width:44px;height:44px;border-radius:12px;background:var(--leafbg);display:grid;place-items:center;color:var(--leaf)}
+.ico svg{width:22px;height:22px}
+.row .d{font-weight:600;line-height:1.3}
+.row .m{font-size:13px;color:var(--mute)}
+.row .q{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+.row .q small{display:block;font-weight:500;font-size:13px;color:var(--mute)}
+.day{font-size:14px;font-weight:600;color:var(--mute);padding:16px 0 2px}
+.empty{padding:40px 0;text-align:center;color:var(--mute)}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));width:min(428px,calc(100% - 32px));min-height:60px;border:0;border-radius:18px;background:var(--leaf);color:var(--onleaf);font:800 18px Figtree,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.fab[disabled]{opacity:.6}
+.fab svg{width:24px;height:24px}
+.btn{width:100%;min-height:52px;border-radius:14px;border:2px solid var(--leaf);background:var(--card);color:var(--leaf);font:800 16px Figtree,sans-serif;cursor:pointer;margin-top:12px}
+.btn.solid{background:var(--leaf);color:var(--onleaf)}
+.btn.red{border-color:var(--alert);color:var(--alert)}
+.hidden{display:none!important}
+.back{background:none;border:0;color:var(--leaf);font:600 16px Figtree,sans-serif;min-height:44px;padding:0;cursor:pointer}
+.shot{margin-top:14px;border-radius:16px;overflow:hidden;background:var(--leafbg);aspect-ratio:4/3;display:grid;place-items:center;position:relative}
+.shot img{width:100%;height:100%;object-fit:cover}
+.scan{position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 55%,transparent);font-weight:600}
+.scan::after{content:"";position:absolute;left:8%;right:8%;height:3px;background:var(--leaf);top:10%;animation:sw 1.2s ease-in-out infinite alternate}
+@keyframes sw{to{top:88%}}
+@media(prefers-reduced-motion:reduce){.scan::after{animation:none;top:50%}}
+.paper{margin-top:16px;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:18px 16px 14px;position:relative}
+.ph{font-size:13px;color:var(--mute);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.f{display:grid;gap:4px;margin-top:12px}
+.f label{font-size:14px;font-weight:600;color:var(--mute)}
+.f input,.f select{font:16px Figtree,sans-serif;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:46px;padding:8px 12px;width:100%}
+.f input.read{border-color:color-mix(in srgb,var(--leaf) 45%,var(--line));background:color-mix(in srgb,var(--leafbg) 45%,var(--card))}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.tot input{font-size:22px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;min-height:38px;padding:6px 12px;font:500 14px Figtree,sans-serif;cursor:pointer}
+.chip[aria-pressed=true]{border-color:var(--leaf);color:var(--leaf);background:var(--leafbg)}
+.warn{margin-top:14px;border-radius:12px;padding:12px 14px;background:var(--alertbg);color:var(--alert);font-weight:600;font-size:15px}
+.good{margin-top:14px;border-radius:12px;padding:12px 14px;background:var(--leafbg);color:var(--leaf);font-weight:600;font-size:15px}
+.scroll{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;font-size:13px;white-space:nowrap}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{background:var(--leafbg);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tfoot td{font-weight:800;border-bottom:0}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:14px;font-size:15px}
+.meta span{color:var(--mute)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 16px;font-weight:600;font-size:15px;transition:opacity .3s;max-width:calc(100% - 32px);pointer-events:none}
+.pin{max-width:320px;margin:20vh auto 0;text-align:center}
+.pin input{font:800 32px Figtree,sans-serif;text-align:center;letter-spacing:.3em;width:100%;min-height:64px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section id="vPin" class="pin hidden">
+    <h1>Caja chica</h1>
+    <p class="sub">Ingrese el PIN</p>
+    <input id="pin" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="PIN">
+    <button class="btn solid" id="bPin">Entrar</button>
+    <div id="pinErr"></div>
+  </section>
+
+  <section id="vList" class="hidden">
+    <header>
+      <div class="top"><b>Agro Organic · Caja chica</b><select class="who" id="who" aria-label="Quién registra"></select></div>
+      <h1>Liquidación en curso</h1>
+      <div class="sum"><span class="big" id="bigTotal">Q0.00</span><span class="sub" id="count"></span></div>
+      <div class="tabs"><button class="tab" id="tList" aria-pressed="true">Facturas</button><button class="tab" id="tExp" aria-pressed="false">Liquidar</button></div>
+    </header>
+    <ul class="list" id="list"></ul>
+  </section>
+
+  <section id="vNew" class="hidden">
+    <button class="back" id="bBack">‹ Volver</button>
+    <h1>Nueva factura</h1>
+    <div class="shot" id="shot"><span class="sub">Foto de la factura</span></div>
+    <div id="readErr"></div>
+    <div id="form" class="hidden">
+      <div id="qr"></div>
+      <div class="paper">
+        <div class="ph"><span>Leído de la foto</span><span>Revise y corrija si hace falta</span></div>
+        <div class="f"><label for="iProv">Proveedor</label><input id="iProv" class="read"></div>
+        <div class="two">
+          <div class="f"><label for="iNit">NIT</label><input id="iNit" class="read"></div>
+          <div class="f"><label for="iFecha">Fecha factura</label><input id="iFecha" class="read" type="date"></div>
+        </div>
+        <div class="two">
+          <div class="f"><label for="iSerie">Serie</label><input id="iSerie" class="read" autocapitalize="characters"></div>
+          <div class="f"><label for="iNum">Número</label><input id="iNum" class="read" inputmode="numeric"></div>
+        </div>
+        <div class="two">
+          <div class="f tot"><label for="iTotal">Total Q</label><input id="iTotal" class="read" inputmode="decimal"></div>
+          <div class="f tot"><label for="iIdp">IDP Q</label><input id="iIdp" class="read" inputmode="decimal"></div>
+        </div>
+      </div>
+      <div class="f"><label for="iDesc">Descripción del gasto</label><input id="iDesc" placeholder="¿Para qué fue?"></div>
+      <div class="chips" id="chips"></div>
+      <div class="two">
+        <div class="f"><label for="iUso">Uso contabilidad</label><select id="iUso"></select></div>
+        <div class="f"><label for="iNorma">Norma de reparto</label><select id="iNorma"></select></div>
+      </div>
+      <div id="dup"></div>
+    </div>
+  </section>
+
+  <section id="vDet" class="hidden">
+    <button class="back" id="bBack3">‹ Volver</button>
+    <h1 id="dTitle"></h1>
+    <div class="meta" id="dMeta"></div>
+    <button class="btn red" id="bDel">Eliminar esta factura</button>
+    <button class="btn red hidden" id="bDelOk">Sí, eliminar</button>
+  </section>
+
+  <section id="vExp" class="hidden">
+    <button class="back" id="bBack2">‹ Volver</button>
+    <h1>Liquidar caja chica</h1>
+    <div class="meta"><span>Nombre</span><b id="eNom"></b><span>Actividad</span><b id="eAct"></b><span>Total de gastos</span><b id="eTot"></b></div>
+    <div class="scroll"><table id="tbl"></table></div>
+    <button class="btn" id="bXls">Descargar Excel (sin cerrar)</button>
+    <button class="btn solid" id="bClose">Cerrar liquidación y descargar</button>
+    <button class="btn solid hidden" id="bCloseOk">Confirmar: cerrar y empezar una nueva</button>
+    <div id="expMsg"></div>
+  </section>
+</div>
+
+<input type="file" id="file" accept="image/*" capture="environment" class="hidden">
+<button class="fab hidden" id="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="fabT"></span></button>
+<div class="toast" id="toast" style="opacity:0"></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const q=n=>'Q'+Number(n||0).toLocaleString('es-GT',{minimumFractionDigits:2,maximumFractionDigits:2});
+const dmy=s=>{const p=String(s||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:String(s||'')};
+const fuel=s=>/gasolina|diesel|diésel|combustible/i.test(s);
+const icoFuel='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M7 8h5M14 9h2l2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/></svg>';
+const icoBag='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>';
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+
+let PIN=ls.get('cc_pin')||'', CFG=null, rows=[], view='pin', photo=null, qrInfo=null, busy=false, detId=null;
+
+const API='https://script.google.com/macros/s/AKfycbxVp5eu2xhBv-EWfSr5TOywxxtkNea6NhgK3oayd1zDPSI6p8TrIecE-AVTOsyIePK0/exec';
+async function call(fn,...args){
+  let r;
+  try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args}),credentials:'omit',redirect:'follow'})}
+  catch(e){throw new Error('Sin conexión. Revise el internet e intente de nuevo.')}
+  let j;try{j=await r.json()}catch(e){throw new Error('Respuesta inválida del servidor ('+r.status+').')}
+  if(!j.ok)throw new Error(j.error||'Error');
+  return j.data;
+}
+function toast(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.opacity=0,2600)}
+function msg(el,cls,t){$(el).innerHTML=t?'<div class="'+cls+'">'+esc(t)+'</div>':''}
+
+function show(v){
+  view=v;
+  ['vPin','vList','vNew','vExp','vDet'].forEach(id=>$(id).classList.add('hidden'));
+  $({pin:'vPin',list:'vList',new:'vNew',exp:'vList',det:'vDet'}[v]).classList.remove('hidden');
+  if(v==='exp'){$('vList').classList.add('hidden');$('vExp').classList.remove('hidden')}
+  $('tList').setAttribute('aria-pressed',v==='list');$('tExp').setAttribute('aria-pressed',v==='exp');
+  const f=$('fab');
+  f.classList.toggle('hidden',!(v==='list'||(v==='new'&&!$('form').classList.contains('hidden'))));
+  $('fabT').textContent=v==='list'?'Fotografiar factura':'Guardar factura';
+  window.scrollTo(0,0);
+}
+
+function fillSelect(id,list,cur){$(id).innerHTML=list.map(x=>'<option'+(x===cur?' selected':'')+'>'+esc(x)+'</option>').join('')}
+
+async function boot(){
+  if(!PIN){show('pin');return}
+  try{
+    CFG=await call('apiInit',PIN);
+    rows=CFG.abiertas;
+    fillSelect('who',CFG.usuarios,ls.get('cc_who'));
+    fillSelect('iUso',CFG.usos);fillSelect('iNorma',CFG.normas);
+    $('eNom').textContent=CFG.nombre;$('eAct').textContent=CFG.actividad;
+    renderList();show('list');
+  }catch(e){PIN='';ls.set('cc_pin','');show('pin');msg('pinErr','warn',e.message)}
+}
+
+function renderList(){
+  const s=rows.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  let last='',h='';
+  for(const r of s){
+    if(r.fecha!==last){last=r.fecha;h+='<li class="day">'+esc(dmy(r.fecha))+'</li>'}
+    h+='<li class="row" data-id="'+esc(r.id)+'"><div class="ico">'+(fuel(r.desc)?icoFuel:icoBag)+'</div><div><div class="d">'+esc(r.desc)+'</div><div class="m">'+esc(r.prov)+' · '+esc(r.por)+'</div></div><div class="q">'+esc(q(r.total))+(r.idp?'<small>IDP '+esc(q(r.idp))+'</small>':'')+'</div></li>';
+  }
+  $('list').innerHTML=h||'<li class="empty">Sin facturas todavía. Toque el botón para fotografiar la primera.</li>';
+  const t=rows.reduce((a,r)=>a+Number(r.total),0);
+  $('bigTotal').textContent=q(t);$('count').textContent=rows.length+(rows.length===1?' factura':' facturas');
+  renderExp();
+}
+
+function renderExp(){
+  const t=rows.reduce((a,r)=>a+Number(r.total),0),ti=rows.reduce((a,r)=>a+Number(r.idp||0),0);
+  $('eTot').textContent=q(t);
+  const s=rows.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const h=['No.','Descripción','Uso','Norma','Serie F','No. F','NIT','Proveedor','Fecha F','Total','IDP','Neta'];
+  $('tbl').innerHTML='<thead><tr>'+h.map((x,i)=>'<th'+(i>8?' class="n"':'')+'>'+x+'</th>').join('')+'</tr></thead><tbody>'+
+   s.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.desc)+'</td><td>'+esc(r.uso)+'</td><td>'+esc(r.norma)+'</td><td>'+esc(r.serie)+'</td><td>'+esc(r.num)+'</td><td>'+esc(r.nit)+'</td><td>'+esc(r.prov)+'</td><td>'+esc(dmy(r.fecha))+'</td><td class="n">'+Number(r.total).toFixed(2)+'</td><td class="n">'+(r.idp?Number(r.idp).toFixed(2):'')+'</td><td class="n">'+(r.total-(r.idp||0)).toFixed(2)+'</td></tr>').join('')+
+   '</tbody><tfoot><tr><td colspan="9">Total</td><td class="n">'+t.toFixed(2)+'</td><td class="n">'+(ti?ti.toFixed(2):'')+'</td><td class="n">'+(t-ti).toFixed(2)+'</td></tr></tfoot>';
+}
+
+/* --- foto: reduz para enviar e procura o QR da SAT --- */
+function loadImg(file){return new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ko;i.src=URL.createObjectURL(file)})}
+function toCanvas(img,max){const s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c}
+function readQR(img){
+  if(typeof jsQR!=='function')return null;
+  for(const m of [2000,1400,1000]){
+    const c=toCanvas(img,m),d=c.getContext('2d').getImageData(0,0,c.width,c.height);
+    const r=jsQR(d.data,d.width,d.height,{inversionAttempts:'attemptBoth'});
+    if(r&&r.data)return parseFEL(r.data);
+  }
+  return null;
+}
+function parseFEL(t){
+  const u=(t.match(/[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}/i)||[])[0];
+  const g=k=>{const m=t.match(new RegExp('[?&]'+k+'=([^&]+)','i'));return m?decodeURIComponent(m[1]):null};
+  const o={raw:t,uuid:u||null,emisor:g('emisor'),monto:g('monto')};
+  if(u){const h=u.replace(/-/g,'').toUpperCase();o.serie=h.slice(0,8);o.num=String(parseInt(h.slice(8,16),16))}
+  return o;
+}
+const normNit=s=>String(s||'').replace(/[^0-9kK]/g,'').toUpperCase();
+
+async function onPhoto(file){
+  $('form').classList.add('hidden');msg('readErr');msg('qr');msg('dup');
+  show('new');
+  const img=await loadImg(file);
+  const c=toCanvas(img,1600);
+  const b64=c.toDataURL('image/jpeg',0.85).split(',')[1];
+  photo={b64,mime:'image/jpeg'};
+  $('shot').innerHTML='<img alt="Factura" src="'+c.toDataURL('image/jpeg',0.6)+'"><div class="scan">Leyendo factura…</div>';
+  qrInfo=readQR(img);
+  try{
+    const d=await call('apiRead',PIN,b64,'image/jpeg');
+    $('iProv').value=d.proveedor||'';$('iNit').value=d.nit_emisor||'';$('iFecha').value=d.fecha||'';
+    $('iSerie').value=(d.serie||'').toUpperCase();$('iNum').value=d.numero||'';
+    $('iTotal').value=d.total!=null?Number(d.total).toFixed(2):'';$('iIdp').value=d.idp!=null?Number(d.idp).toFixed(2):'';
+    $('iDesc').value='';
+    const notes=[];
+    if(d.receptor_ok===false)notes.push(['warn','El NIT del receptor no es el de la empresa. Revise la factura.']);
+    if(d.nota)notes.push(['warn','Nota de lectura: '+d.nota]);
+    checkQR(d);
+    $('dup').innerHTML=notes.map(n=>'<div class="'+n[0]+'">'+esc(n[1])+'</div>').join('');
+    $('form').classList.remove('hidden');
+  }catch(e){
+    msg('readErr','warn',e.message+' Puede llenar los datos a mano.');
+    ['iProv','iNit','iFecha','iSerie','iNum','iTotal','iIdp','iDesc'].forEach(id=>$(id).value='');
+    if(qrInfo){$('iSerie').value=qrInfo.serie||'';$('iNum').value=qrInfo.num||'';$('iNit').value=qrInfo.emisor||'';$('iTotal').value=qrInfo.monto||''}
+    $('form').classList.remove('hidden');
+  }
+  $('shot').querySelector('.scan')?.remove();
+  renderChips();checkDup();show('new');
+}
+
+function checkQR(){
+  if(!qrInfo){msg('qr','warn','No se pudo leer el código QR. Revise los datos con cuidado.');return 'no leído'}
+  const bad=[];
+  if(qrInfo.serie&&qrInfo.serie!==$('iSerie').value.trim().toUpperCase())bad.push('serie');
+  if(qrInfo.num&&qrInfo.num!==$('iNum').value.trim().replace(/^0+/,''))bad.push('número');
+  if(qrInfo.emisor&&normNit(qrInfo.emisor)!==normNit($('iNit').value))bad.push('NIT');
+  if(qrInfo.monto&&Math.abs(parseFloat(qrInfo.monto)-parseFloat($('iTotal').value||0))>0.009)bad.push('total');
+  if(bad.length){msg('qr','warn','El QR de la SAT no coincide en: '+bad.join(', ')+'. Revise.');return 'difiere: '+bad.join(', ')}
+  msg('qr','good','Código QR de la SAT leído: los datos coinciden.');return 'ok';
+}
+
+function renderChips(){const cur=$('iDesc').value;$('chips').innerHTML=(CFG?.descripciones||[]).map((p,i)=>'<button class="chip" data-i="'+i+'" aria-pressed="'+(cur===p)+'">'+esc(p)+'</button>').join('')}
+function checkDup(){
+  const s=$('iSerie').value.trim().toUpperCase(),n=$('iNum').value.trim().replace(/^0+/,'');
+  const d=s&&rows.find(r=>r.serie.toUpperCase()===s&&String(r.num).replace(/^0+/,'')===n);
+  const box=$('dup').querySelector('.dupw');if(box)box.remove();
+  if(d)$('dup').insertAdjacentHTML('afterbegin','<div class="warn dupw">Esta factura ya fue registrada por '+esc(d.por)+'. No se puede guardar dos veces.</div>');
+  return !!d;
+}
+
+async function save(){
+  if(busy)return;
+  if(checkDup())return;
+  if(!$('iDesc').value.trim()){$('iDesc').focus();toast('Falta la descripción');return}
+  if(!(parseFloat($('iTotal').value.replace(',','.'))>0)){$('iTotal').focus();toast('Revise el total');return}
+  busy=true;$('fab').disabled=true;$('fabT').textContent='Guardando…';
+  const r={por:$('who').value,desc:$('iDesc').value.trim(),uso:$('iUso').value,norma:$('iNorma').value,serie:$('iSerie').value,num:$('iNum').value,nit:$('iNit').value,prov:$('iProv').value,fecha:$('iFecha').value,total:parseFloat($('iTotal').value.replace(',','.')),idp:parseFloat(($('iIdp').value||'').replace(',','.'))||0,qr:checkQR()};
+  try{rows=await call('apiSave',PIN,r,photo&&photo.b64,photo&&photo.mime);photo=null;renderList();show('list');toast('Factura guardada')}
+  catch(e){toast(e.message)}
+  busy=false;$('fab').disabled=false;$('fabT').textContent=view==='list'?'Fotografiar factura':'Guardar factura';
+}
+
+function openDet(id){
+  const r=rows.find(x=>x.id===id);if(!r)return;detId=id;
+  $('dTitle').textContent=r.desc;
+  const f=[['Proveedor',r.prov],['NIT',r.nit],['Serie',r.serie],['Número',r.num],['Fecha',dmy(r.fecha)],['Total',q(r.total)],['IDP',r.idp?q(r.idp):'—'],['Uso',r.uso],['Norma',r.norma],['Registró',r.por+' · '+r.registrado],['QR',r.qr||'—']];
+  $('dMeta').innerHTML=f.map(x=>'<span>'+esc(x[0])+'</span><b>'+esc(x[1])+'</b>').join('')+(r.foto?'<span>Foto</span><b><a href="'+esc(r.foto)+'" target="_blank" rel="noopener">Ver en Drive</a></b>':'');
+  $('bDel').classList.remove('hidden');$('bDelOk').classList.add('hidden');
+  show('det');
+}
+
+function download(name,b64){
+  try{
+    const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=name;document.body.appendChild(a);a.click();a.remove();
+  }catch(e){}
+}
+async function doExport(close){
+  if(busy)return;busy=true;msg('expMsg','good','Generando Excel…');
+  try{
+    const r=await call('apiExport',PIN,close);
+    download(r.name,r.b64);
+    msg('expMsg','good',r.name+' listo. También quedó guardado en la carpeta del Drive.'+(r.cerrada?' Liquidación cerrada.':''));
+    if(r.cerrada){rows=[];renderList()}
+  }catch(e){msg('expMsg','warn',e.message)}
+  busy=false;$('bCloseOk').classList.add('hidden');$('bClose').classList.remove('hidden');
+}
+
+$('bPin').addEventListener('click',()=>{PIN=$('pin').value.trim();ls.set('cc_pin',PIN);msg('pinErr');boot()});
+$('pin').addEventListener('keydown',e=>{if(e.key==='Enter')$('bPin').click()});
+$('who').addEventListener('change',()=>ls.set('cc_who',$('who').value));
+$('fab').addEventListener('click',()=>{if(view==='list'){$('file').click()}else if(view==='new')save()});
+$('file').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)onPhoto(f).catch(err=>{msg('readErr','warn','No se pudo abrir la foto.');show('new')})});
+$('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;$('iDesc').value=CFG.descripciones[b.dataset.i];renderChips()});
+$('iDesc').addEventListener('input',renderChips);
+['iSerie','iNum','iNit','iTotal'].forEach(id=>$(id).addEventListener('change',()=>{checkDup();checkQR()}));
+$('list').addEventListener('click',e=>{const li=e.target.closest('.row');if(li)openDet(li.dataset.id)});
+$('tList').addEventListener('click',()=>show('list'));
+$('tExp').addEventListener('click',()=>{renderExp();msg('expMsg');show('exp')});
+$('bBack').addEventListener('click',()=>show('list'));
+$('bBack2').addEventListener('click',()=>show('list'));
+$('bBack3').addEventListener('click',()=>show('list'));
+$('bDel').addEventListener('click',()=>{$('bDel').classList.add('hidden');$('bDelOk').classList.remove('hidden')});
+$('bDelOk').addEventListener('click',async()=>{try{rows=await call('apiDelete',PIN,detId);renderList();show('list');toast('Factura eliminada')}catch(e){toast(e.message)}});
+$('bXls').addEventListener('click',()=>doExport(false));
+$('bClose').addEventListener('click',()=>{$('bClose').classList.add('hidden');$('bCloseOk').classList.remove('hidden')});
+$('bCloseOk').addEventListener('click',()=>doExport(true));
+
+/* sincroniza: ao voltar para o app e a cada 30 s na lista */
+async function refresh(){
+  if(!PIN||busy||!(view==='list'||view==='exp'))return;
+  try{const d=await call('apiInit',PIN);rows=d.abiertas;renderList()}catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+setInterval(refresh,30000);
+
+boot();
+}
+</script>
+</body>
+</html>
